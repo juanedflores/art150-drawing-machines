@@ -1,0 +1,318 @@
+/* Walkthrough mode: a full-screen, hands-free tour of every exhibit, made
+   for the monitor outside the classroom. See walkthrough.js. */
+
+.wt-start {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+.wt-start:hover {
+  transform: translateY(-2px);
+}
+.wt-start:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+body.wt-on .wt-start {
+  display: none;
+}
+
+/* ---------- the stage ---------- */
+
+.wt {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 27vw, 540px);
+  gap: clamp(24px, 3vw, 64px);
+  padding: clamp(20px, 4vh, 56px) clamp(24px, 3.5vw, 72px) clamp(28px, 5vh, 64px);
+  background: var(--wall);
+  opacity: 0;
+  transition: opacity 0.6s;
+  cursor: none;
+}
+.wt[hidden] {
+  display: none;
+}
+.wt.on {
+  opacity: 1;
+}
+
+.wt-media {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.wt-frame {
+  flex: 1;
+  min-height: 0;
+  padding: clamp(10px, 1.5vh, 20px);
+  background: var(--frame);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.12),
+    0 20px 50px rgba(0, 0, 0, 0.22);
+}
+.wt-mat {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: var(--mat);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    inset 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+/* two layers so one picture can slide out as the next slides in */
+.wt-layer {
+  position: absolute;
+  inset: 5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateX(5%);
+  transition:
+    opacity 0.8s,
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.wt-layer.in {
+  opacity: 1;
+  transform: none;
+}
+.wt-layer.out {
+  opacity: 0;
+  transform: translateX(-5%);
+}
+/* fill the mat (scaling small clips and photos up), keeping proportions */
+.wt-layer img,
+.wt-layer video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.wt-caption {
+  margin: clamp(10px, 1.6vh, 20px) 0 0;
+  color: var(--muted);
+  font-size: clamp(12px, 1.5vh, 18px);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: opacity 0.4s;
+}
+
+/* ---------- the label beside it ---------- */
+
+.wt-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  transition: opacity 0.5s;
+}
+.wt-info.fading {
+  opacity: 0;
+}
+.wt-label {
+  overflow: hidden;
+  padding: clamp(20px, 3vh, 40px) clamp(20px, 2vw, 36px);
+  background: var(--label);
+  border-left: 8px solid var(--accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.wt-no {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(12px, 1.5vh, 18px);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.wt-title {
+  margin: 6px 0 0;
+  font-size: clamp(26px, 4.2vh, 56px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.wt-label h3 {
+  margin: clamp(14px, 2.4vh, 30px) 0 8px;
+  color: var(--blue);
+  font-size: clamp(11px, 1.3vh, 16px);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.wt-label ol,
+.wt-label ul {
+  margin: 0;
+  padding-left: 1.4em;
+  font-size: clamp(14px, 1.95vh, 24px);
+  line-height: 1.4;
+}
+.wt-label li {
+  margin: 0.25em 0;
+}
+.wt-label li::marker {
+  font-weight: 700;
+  color: var(--muted);
+}
+.wt-note {
+  margin: 0.8em 0 0;
+  color: #4a4944;
+  font-size: clamp(13px, 1.7vh, 20px);
+  font-style: italic;
+}
+
+/* progress along the bottom edge */
+.wt-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background: var(--rule);
+}
+.wt-progress i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.6s;
+}
+
+/* operator hint: shows briefly at the start and whenever the mouse moves */
+.wt-hint {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  z-index: 70;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.8);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+.wt-hint.on {
+  opacity: 1;
+}
+
+/* ---------- the closing card ---------- */
+
+/* soften the page behind the card; strongest in the middle so the footer
+   at the bottom stays readable */
+.wt-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: radial-gradient(ellipse 70% 55% at 50% 45%, rgba(244, 241, 234, 0.92), rgba(244, 241, 234, 0.55) 70%, rgba(244, 241, 234, 0) 100%);
+  opacity: 0;
+  transition: opacity 1.4s;
+  pointer-events: none;
+}
+.wt-veil.on {
+  opacity: 1;
+}
+
+.wt-end {
+  position: fixed;
+  left: 50%;
+  top: 46%;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: clamp(20px, 2.5vw, 48px);
+  padding: clamp(24px, 4vh, 52px) clamp(28px, 3vw, 60px);
+  background: rgba(255, 255, 255, 0.97);
+  border-left: 10px solid var(--accent);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transform: translate(-50%, -44%);
+  transition:
+    opacity 1.4s,
+    transform 1.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+.wt-end[hidden] {
+  display: none;
+}
+.wt-end.on {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+.wt-end img {
+  width: clamp(120px, 18vh, 240px);
+  height: auto;
+}
+.wt-end .k {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(13px, 1.8vh, 22px);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.wt-end .url {
+  margin: 8px 0 6px;
+  font-size: clamp(24px, 4vh, 54px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.wt-end .sub {
+  margin: 0;
+  color: #3b3a37;
+  font-size: clamp(14px, 1.9vh, 22px);
+}
+body.wt-on {
+  cursor: none;
+}
+
+/* portrait screens: picture on top, label underneath */
+@media (orientation: portrait) {
+  .wt {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1.6fr) minmax(0, 1fr);
+  }
+  .wt-info {
+    justify-content: flex-start;
+  }
+  .wt-end {
+    flex-direction: column;
+    text-align: center;
+  }
+  .wt-end .url {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wt-layer,
+  .wt-layer.out {
+    transform: none;
+  }
+}
