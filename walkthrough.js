@@ -241,7 +241,6 @@
       l.className = "wt-layer";
       l.replaceChildren();
     });
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   }
 
   // ---------- controls ----------
@@ -253,10 +252,10 @@
     hintTimer = setTimeout(() => hint.classList.remove("on"), 2500);
   }
 
-  startBtn.addEventListener("click", () => {
-    document.documentElement.requestFullscreen?.().catch(() => {});
-    tour();
-  });
+  // The tour fills the browser window but doesn't call the Fullscreen API:
+  // that always makes the browser show its own "press Esc to exit" banner.
+  // For edge-to-edge, put the browser itself in full screen or kiosk mode.
+  startBtn.addEventListener("click", () => tour());
 
   document.addEventListener("keydown", (e) => {
     if (!document.body.classList.contains("wt-on")) return;
@@ -272,10 +271,6 @@
   });
   document.addEventListener("mousemove", () => {
     if (document.body.classList.contains("wt-on")) flashHint();
-  });
-  // leaving fullscreen with the browser's own Esc also ends the tour
-  document.addEventListener("fullscreenchange", () => {
-    if (!document.fullscreenElement && document.body.classList.contains("wt-on") && !LOOP) exit();
   });
 
   if (params.has("walkthrough")) tour();
