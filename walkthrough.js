@@ -101,6 +101,7 @@
     const list = (items) => items.map((s) => `<li>${s}</li>`).join("");
     return `<p class="wt-no">No. ${pad(i + 1)} <span style="opacity:.6">of ${EXHIBITS.length}</span></p>
       <h2 class="wt-title">${ex.title}</h2>
+      ${ex.artist ? `<p class="wt-artist">${ex.artist}</p>` : ""}
       <h3>${ex.stepsLabel || "Instructions"}</h3>
       <ol>${list(ex.steps)}</ol>
       ${ex.limitations ? `<h3>Limitations</h3><ul>${list(ex.limitations)}</ul>` : ""}
